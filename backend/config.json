@@ -1,0 +1,6 @@
+{
+    "host": "mariadb",
+    "user": "optuser",
+    "password": "optpassword",
+    "database": "BoiteAIdees"
+} 
