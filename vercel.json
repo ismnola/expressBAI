@@ -5,7 +5,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs22.x",
+      "runtime": "vercel/nodejs22.x",
       "maxDuration": 900
     }
   },
