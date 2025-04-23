@@ -2,11 +2,14 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import mysql from 'mysql2/promise';
-import fs from 'fs';
-
 
 const router = express.Router();
-const dbConfig = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+};
 const SECRET_KEY = 'SECRET_KEY'; 
 
 // Middleware d'authentification
