@@ -1,15 +1,8 @@
 import express from 'express';
-import mysql from 'mysql2/promise';
 import cors from 'cors';
 import authRoutes from './authRoutes.js';
 import { authenticateToken } from './authMiddleware.js';
-
-const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-};
+import pool from './db.js';
 
 const app = express();
 app.use(cors());
@@ -20,18 +13,17 @@ app.use('/auth', authRoutes);
 app.get('/', (req, res) => {
   res.send('API Express en ligne 🚀');
 });
+
 // GET idées (protégé)
 app.get('/idees', authenticateToken, async (req, res) => {
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [rows] = await connection.execute(
-      `SELECT id_idee, date_idee, idee, statuts.statut, evaluations.id_note, evaluations.libelle AS libelle_note 
-       FROM idees 
-       INNER JOIN evaluations ON idees.id_note = evaluations.id_note 
-       INNER JOIN statuts ON idees.id_statut = statuts.id_statut 
-       ORDER BY idees.date_idee DESC`
-    );
-    await connection.end();
+    const [rows] = await pool.query(`
+      SELECT id_idee, date_idee, idee, statuts.statut, evaluations.id_note, evaluations.libelle AS libelle_note 
+      FROM idees 
+      INNER JOIN evaluations ON idees.id_note = evaluations.id_note 
+      INNER JOIN statuts ON idees.id_statut = statuts.id_statut 
+      ORDER BY idees.date_idee DESC
+    `);
     res.status(200).json(rows);
   } catch (error) {
     console.error('Erreur lors de la récupération des idées:', error);
@@ -48,9 +40,7 @@ app.post('/ajouter-idee', async (req, res) => {
   }
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [result] = await connection.execute('INSERT INTO idees (idee) VALUES (?)', [idee]);
-    await connection.end();
+    const [result] = await pool.execute('INSERT INTO idees (idee) VALUES (?)', [idee]);
     res.status(201).json({ message: 'Idée ajoutée avec succès!', id: result.insertId });
   } catch (error) {
     console.error('Erreur lors de l\'insertion:', error);
@@ -67,9 +57,7 @@ app.delete('/idees/:id', async (req, res) => {
   }
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [result] = await connection.execute('DELETE FROM idees WHERE id_idee = ?', [id]);
-    await connection.end();
+    const [result] = await pool.execute('DELETE FROM idees WHERE id_idee = ?', [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Idée non trouvée.' });
@@ -92,9 +80,7 @@ app.post('/idees/:id/evaluation', async (req, res) => {
   }
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [result] = await connection.execute('UPDATE idees SET id_note = ? WHERE id_idee = ?', [note, id]);
-    await connection.end();
+    const [result] = await pool.execute('UPDATE idees SET id_note = ? WHERE id_idee = ?', [note, id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Idée non trouvée.' });
@@ -117,9 +103,7 @@ app.post('/idees/:id/statut', async (req, res) => {
   }
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [result] = await connection.execute('UPDATE idees SET id_statut = ? WHERE id_idee = ?', [statut, id]);
-    await connection.end();
+    const [result] = await pool.execute('UPDATE idees SET id_statut = ? WHERE id_idee = ?', [statut, id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Idée non trouvée.' });
@@ -130,10 +114,6 @@ app.post('/idees/:id/statut', async (req, res) => {
     console.error('Erreur mise à jour statut:', error);
     res.status(500).json({ error: `Erreur: ${error.message}` });
   }
-});
-
-app.get('/', (req, res) => {
-  res.send('Express js en cours d\'utilisation');
 });
 
 export default app;
