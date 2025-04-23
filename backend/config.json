@@ -1,6 +1,6 @@
 {
-    "host": "mariadb",
-    "user": "optuser",
-    "password": "optpassword",
-    "database": "BoiteAIdees"
+    "host": "caboose.proxy.rlwy.net",
+    "user": "root",
+    "password": "jJvsebaYcQlXdLBpsHznGnlvuldBxTxi",
+    "database": "mysql"
 } 
