@@ -17,6 +17,9 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 
+app.get('/', (req, res) => {
+  res.send('API Express en ligne 🚀');
+});
 // GET idées (protégé)
 app.get('/idees', authenticateToken, async (req, res) => {
   try {
