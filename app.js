@@ -114,8 +114,8 @@ app.post('/idees/:id/statut', async (req, res) => {
     console.error('Erreur mise à jour statut:', error);
     res.status(500).json({ error: `Erreur: ${error.message}` });
   }
-const PORT = process.env.PORT || 3000;
 });
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Serveur Express démarré sur le port ${PORT}`);
 });
