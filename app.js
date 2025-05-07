@@ -31,22 +31,63 @@ app.get('/idees', authenticateToken, async (req, res) => {
   }
 });
 
-// POST idée
+// // POST idée
+// app.post('/ajouter-idee', async (req, res) => {
+//   const { idee } = req.body;
+
+//   if (!idee || idee.length <= 10) {
+//     return res.status(400).json({ error: 'L\'idée doit contenir plus de 10 caractères.' });
+//   }
+
+//   try {
+//     const [result] = await pool.execute('INSERT INTO idees (idee) VALUES (?)', [idee]);
+//     res.status(201).json({ message: 'Idée ajoutée avec succès!', id: result.insertId });
+//   } catch (error) {
+//     console.error('Erreur lors de l\'insertion:', error);
+//     res.status(500).json({ error: `Erreur: ${error.message}` });
+//   }
+// });
+
+
+
+// POST idée avec vérification de l'utilisateur
 app.post('/ajouter-idee', async (req, res) => {
-  const { idee } = req.body;
+  const { login, idee } = req.body;
 
   if (!idee || idee.length <= 10) {
     return res.status(400).json({ error: 'L\'idée doit contenir plus de 10 caractères.' });
   }
 
   try {
-    const [result] = await pool.execute('INSERT INTO idees (idee) VALUES (?)', [idee]);
+    const [users] = await pool.execute(
+      'SELECT id, estAdmin FROM utilisateurs WHERE log_in = ?',
+      [login]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+    }
+
+    const user = users[0];
+
+    if (user.estAdmin === 1) {
+      return res.status(403).json({ error: 'Les administrateurs n\'ont pas d\'idées.' });
+    }
+
+    const [result] = await pool.execute(
+      'INSERT INTO idees (idee) VALUES (?)',
+      [idee]
+    );
+
     res.status(201).json({ message: 'Idée ajoutée avec succès!', id: result.insertId });
   } catch (error) {
     console.error('Erreur lors de l\'insertion:', error);
     res.status(500).json({ error: `Erreur: ${error.message}` });
   }
 });
+
+
+
 
 // DELETE idée
 app.delete('/idees/:id', async (req, res) => {
