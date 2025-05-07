@@ -75,8 +75,8 @@ app.post('/ajouter-idee', async (req, res) => {
     }
 
     const [result] = await pool.execute(
-      'INSERT INTO idees (idee) VALUES (?)',
-      [idee]
+      'INSERT INTO idees (idee, id_user) VALUES (?, ?)',
+      [idee, user.id]
     );
 
     res.status(201).json({ message: 'Idée ajoutée avec succès!', id: result.insertId });
